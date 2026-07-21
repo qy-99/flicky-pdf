@@ -1043,7 +1043,7 @@ export function ToolWorkspace({ tool, onBack }: ToolWorkspaceProps) {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8" id="workspace-container">
+    <div className="mx-auto max-w-[95rem] px-4 py-8 sm:px-6 lg:px-8 xl:px-12" id="workspace-container">
       {/* Back row Header */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div className="flex items-center gap-4">
@@ -1090,8 +1090,8 @@ export function ToolWorkspace({ tool, onBack }: ToolWorkspaceProps) {
       ) : (
         /* Interactive Workspace Stage */
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12" id="workspace-stage">
-          {/* Sidebar configuration (4 cols on lg, positioned on the right on desktop) */}
-          <div className="lg:col-span-4 flex flex-col gap-6 order-2 lg:order-2">
+          {/* Sidebar configuration (4 cols on lg, 3 cols on xl, positioned on the right on desktop) */}
+          <div className="lg:col-span-4 xl:col-span-3 flex flex-col gap-6 order-2 lg:order-2">
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               {(activeTabId === ToolId.ORGANIZE || activeTabId === ToolId.MERGE) ? (
                 // Premium ILovePDF-style Sidebar
@@ -1550,8 +1550,8 @@ export function ToolWorkspace({ tool, onBack }: ToolWorkspaceProps) {
             )}
           </div>
 
-          {/* Interactive Workspace Area (8 cols) */}
-          <div className="lg:col-span-8 flex flex-col gap-6 order-1 lg:order-1">
+          {/* Interactive Workspace Area (8 cols on lg, 9 cols on xl) */}
+          <div className="lg:col-span-8 xl:col-span-9 flex flex-col gap-6 order-1 lg:order-1">
             {/* Multi-file grid/list selection */}
             {(isMultiFile || isImgTool) && activeTabId !== ToolId.COMPARE && activeTabId !== ToolId.ORGANIZE && activeTabId !== ToolId.MERGE && (
               <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
