@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Outer orange background block -->
+  <rect width="100" height="100" rx="22" fill="#f97316" />
+  <!-- Elegant white page body with folded corner space -->
+  <path d="M30,25 L55,25 L72,42 L72,75 C72,77.8 69.8,80 67,80 L30,80 C27.2,80 25,77.8 25,75 L25,30 C25,27.2 27.2,25 30,25 Z" fill="#ffffff" />
+  <!-- Beautiful folded page corner in soft light orange/peach -->
+  <path d="M55,25 L55,35 C55,38.8 58.2,42 62,42 L72,42 L55,25 Z" fill="#ffedd5" />
+  <!-- Elegant vector-designed letter 'F' matching the brand name Flicky -->
+  <path d="M38,36 L52,36 M38,46 L48,46 M38,36 L38,64" stroke="#f97316" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

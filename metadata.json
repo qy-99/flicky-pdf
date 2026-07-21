@@ -1,0 +1,6 @@
+{
+  "name": "Flicky",
+  "description": "Flicky - A fast, 100% client-side PDF tool suite (Merge, Split, Rotate, Convert, Page Numbers, Watermark, Compress, Visual Sign, OCR, Forms, Compare, and more). Securely processes files entirely in your browser.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
