@@ -35,8 +35,17 @@ export function OfflineIndicator() {
         .then((reg) => {
           setSwState((prev) => ({ ...prev, isRegistered: true, checking: false }));
           
-          if (navigator.serviceWorker.controller) {
-            setSwState((prev) => ({ ...prev, isCached: true }));
+          // Check if active controller or active/waiting worker exists or if cache exists
+          if (navigator.serviceWorker.controller || reg.active || reg.waiting) {
+            setSwState((prev) => ({ ...prev, isCached: true, isRegistered: true }));
+          }
+
+          if ('caches' in window) {
+            caches.keys().then((keys) => {
+              if (keys.some((k) => k.startsWith('flicky-cache'))) {
+                setSwState((prev) => ({ ...prev, isCached: true }));
+              }
+            });
           }
 
           reg.onupdatefound = () => {
