@@ -24,17 +24,21 @@ export function OfflineIndicator() {
 
     // SW Registration
     if (swState.isSupported) {
+      const handleControllerChange = () => {
+        setSwState((prev) => ({ ...prev, isCached: true, isRegistered: true }));
+      };
+
+      navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
+
       navigator.serviceWorker
         .register('./sw.js', { scope: './' })
         .then((reg) => {
           setSwState((prev) => ({ ...prev, isRegistered: true, checking: false }));
           
-          // Check if active controller or worker exists
-          if (navigator.serviceWorker.controller || reg.active) {
+          if (navigator.serviceWorker.controller) {
             setSwState((prev) => ({ ...prev, isCached: true }));
           }
 
-          // Monitor installation state changes
           reg.onupdatefound = () => {
             const installingWorker = reg.installing;
             if (installingWorker) {
@@ -50,6 +54,10 @@ export function OfflineIndicator() {
           console.warn('Service Worker registration failed:', err);
           setSwState((prev) => ({ ...prev, checking: false }));
         });
+
+      return () => {
+        navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
+      };
     } else {
       setSwState((prev) => ({ ...prev, checking: false }));
     }
