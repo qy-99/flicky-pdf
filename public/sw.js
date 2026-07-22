@@ -1,13 +1,20 @@
-const CACHE_NAME = 'flicky-cache-v1';
-const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icon.svg',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/screenshot-desktop.png',
-  '/screenshot-mobile.png',
+const CACHE_NAME = 'flicky-cache-v2';
+
+// Derive the base path where sw.js is served (e.g., '/' or '/flicky-pdf/')
+const basePath = self.location.pathname.substring(0, self.location.pathname.lastIndexOf('/') + 1);
+
+const LOCAL_ASSETS = [
+  basePath,
+  basePath + 'index.html',
+  basePath + 'manifest.json',
+  basePath + 'icon.svg',
+  basePath + 'icon-192.png',
+  basePath + 'icon-512.png',
+  basePath + 'screenshot-desktop.png',
+  basePath + 'screenshot-mobile.png'
+];
+
+const CDN_ASSETS = [
   'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
@@ -18,9 +25,18 @@ const ASSETS_TO_CACHE = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] Pre-caching static assets and CDN libraries');
-      return cache.addAll(ASSETS_TO_CACHE);
+    caches.open(CACHE_NAME).then(async (cache) => {
+      console.log('[Service Worker] Pre-caching static assets for base path:', basePath);
+      const allAssets = [...LOCAL_ASSETS, ...CDN_ASSETS];
+      await Promise.allSettled(
+        allAssets.map(async (url) => {
+          try {
+            await cache.add(url);
+          } catch (err) {
+            console.warn('[Service Worker] Optional pre-cache skipped:', url, err);
+          }
+        })
+      );
     }).then(() => self.skipWaiting())
   );
 });
@@ -41,34 +57,33 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests
   if (event.request.method !== 'GET') return;
 
-  // Skip dev server hot reload and other internal requests (e.g., websocket)
   const url = new URL(event.request.url);
-  if (url.pathname.includes('@vite') || url.pathname.includes('hmr') || url.hostname === 'localhost' && url.port !== '3000') {
+  // Skip dev server hot reload
+  if (url.pathname.includes('@vite') || url.pathname.includes('hmr') || (url.hostname === 'localhost' && url.port !== '3000')) {
     return;
   }
 
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
-        // Return cached, but fetch fresh in background for non-CDN assets
+        // Stale-while-revalidate for local assets
         if (!event.request.url.includes('cdnjs') && !event.request.url.includes('unpkg')) {
           fetch(event.request)
             .then((networkResponse) => {
-              if (networkResponse.status === 200) {
+              if (networkResponse && networkResponse.status === 200) {
                 caches.open(CACHE_NAME).then((cache) => cache.put(event.request, networkResponse));
               }
             })
-            .catch(() => {/* Ignore off-line updates */});
+            .catch(() => {/* Ignore offline sync errors */});
         }
         return cachedResponse;
       }
 
       return fetch(event.request)
         .then((networkResponse) => {
-          if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic' && !event.request.url.includes('cdnjs') && !event.request.url.includes('unpkg')) {
+          if (!networkResponse || networkResponse.status !== 200 || (networkResponse.type !== 'basic' && !event.request.url.includes('cdnjs') && !event.request.url.includes('unpkg'))) {
             return networkResponse;
           }
 
@@ -80,9 +95,9 @@ self.addEventListener('fetch', (event) => {
           return networkResponse;
         })
         .catch(() => {
-          // If offline and request is for navigation (HTML page), return index.html
+          // If offline and request is for navigation, return cached index.html or basePath
           if (event.request.mode === 'navigate') {
-            return caches.match('/index.html');
+            return caches.match(basePath + 'index.html').then((res) => res || caches.match(basePath));
           }
         });
     })

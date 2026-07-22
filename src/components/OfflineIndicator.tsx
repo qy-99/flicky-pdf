@@ -25,12 +25,12 @@ export function OfflineIndicator() {
     // SW Registration
     if (swState.isSupported) {
       navigator.serviceWorker
-        .register('/sw.js')
+        .register('./sw.js', { scope: './' })
         .then((reg) => {
           setSwState((prev) => ({ ...prev, isRegistered: true, checking: false }));
           
-          // Check if controller exists, meaning it was already installed & cached
-          if (navigator.serviceWorker.controller) {
+          // Check if active controller or worker exists
+          if (navigator.serviceWorker.controller || reg.active) {
             setSwState((prev) => ({ ...prev, isCached: true }));
           }
 
@@ -39,7 +39,7 @@ export function OfflineIndicator() {
             const installingWorker = reg.installing;
             if (installingWorker) {
               installingWorker.onstatechange = () => {
-                if (installingWorker.state === 'activated') {
+                if (installingWorker.state === 'activated' || installingWorker.state === 'installed') {
                   setSwState((prev) => ({ ...prev, isCached: true }));
                 }
               };
