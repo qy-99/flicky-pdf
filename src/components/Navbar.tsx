@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { OfflineIndicator } from './OfflineIndicator';
 import { Download, Monitor, Check, Sparkles, Share2, Copy } from 'lucide-react';
+import { WindowsIntegrationModal } from './WindowsIntegrationModal';
 
 interface NavbarProps {
   onBackToHome?: () => void;
@@ -13,6 +14,7 @@ export function Navbar({ onBackToHome, isHome }: NavbarProps) {
   const [isInstalled, setIsInstalled] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showWindowsModal, setShowWindowsModal] = useState(false);
   const [copied, setCopied] = useState(false);
   const [appUrl, setAppUrl] = useState('');
 
@@ -174,6 +176,17 @@ export function Navbar({ onBackToHome, isHome }: NavbarProps) {
             </div>
           )}
 
+          {/* Windows Context Menu Integration Button */}
+          <button
+            onClick={() => setShowWindowsModal(true)}
+            className="hidden md:flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 shadow-xs px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer"
+            title="Integrate with Windows File Explorer Context Menu"
+            id="btn-navbar-windows-integration"
+          >
+            <Monitor className="h-3.5 w-3.5 text-orange-500" />
+            <span>Windows Integration</span>
+          </button>
+
           {/* Share App Button & Modal */}
           <div className="relative">
             <button
@@ -238,6 +251,14 @@ export function Navbar({ onBackToHome, isHome }: NavbarProps) {
           <OfflineIndicator />
         </div>
       </div>
+
+      {/* Windows Integration Dialog Modal */}
+      <WindowsIntegrationModal
+        isOpen={showWindowsModal}
+        onClose={() => setShowWindowsModal(false)}
+        onInstallPwa={handleInstallClick}
+        isInstalledPwa={isInstalled}
+      />
     </header>
   );
 }

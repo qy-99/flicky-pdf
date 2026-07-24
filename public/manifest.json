@@ -49,5 +49,14 @@
   "background_color": "#f97316",
   "theme_color": "#f97316",
   "display": "standalone",
-  "orientation": "any"
+  "orientation": "any",
+  "file_handlers": [
+    {
+      "action": "./",
+      "name": "PDF Document",
+      "accept": {
+        "application/pdf": [".pdf"]
+      }
+    }
+  ]
 }

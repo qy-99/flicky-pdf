@@ -1,12 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { ToolSelector } from './components/ToolSelector';
 import { ToolWorkspace } from './components/ToolWorkspace';
-import { PDFTool } from './types';
+import { PDFTool, ToolId } from './types';
+import { TOOLS } from './constants';
 import { ShieldAlert, Cpu } from 'lucide-react';
 
 export default function App() {
   const [selectedTool, setSelectedTool] = useState<PDFTool | null>(null);
+
+  // Check URL parameters & PWA Launch Queue for Windows File Integration
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // 1. URL Query Param Routing (e.g. ?action=edit, ?action=merge)
+    const params = new URLSearchParams(window.location.search);
+    const action = params.get('action');
+
+    if (action) {
+      let targetToolId: ToolId | null = null;
+      if (action === 'edit') targetToolId = ToolId.EDIT;
+      else if (action === 'merge' || action === 'organize') targetToolId = ToolId.ORGANIZE;
+      else if (action === 'sign') targetToolId = ToolId.SIGN;
+      else if (action === 'compress') targetToolId = ToolId.COMPRESS;
+      else if (action === 'split') targetToolId = ToolId.SPLIT;
+      else if (action === 'reader') targetToolId = ToolId.READER;
+
+      if (targetToolId) {
+        const foundTool = TOOLS.find(t => t.id === targetToolId);
+        if (foundTool) {
+          setSelectedTool(foundTool);
+        }
+      }
+    }
+
+    // 2. Windows PWA Launch Queue API for File Associations
+    if ('launchQueue' in window && 'files' in (window as any).launchQueue) {
+      (window as any).launchQueue.setConsumer(async (launchParams: any) => {
+        if (!launchParams.files || !launchParams.files.length) return;
+        
+        // If no tool is selected yet, default to Reader or Organize
+        if (!selectedTool) {
+          const defaultTool = TOOLS.find(t => t.id === ToolId.READER) || TOOLS[0];
+          setSelectedTool(defaultTool);
+        }
+      });
+    }
+  }, []);
 
   const handleSelectTool = (tool: PDFTool) => {
     setSelectedTool(tool);
@@ -15,6 +55,11 @@ export default function App() {
 
   const handleBackToHome = () => {
     setSelectedTool(null);
+    // Clean query params on return to home
+    if (window.history && window.history.replaceState) {
+      const cleanUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
+      window.history.replaceState({ path: cleanUrl }, '', cleanUrl);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
